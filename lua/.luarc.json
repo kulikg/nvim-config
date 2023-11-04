@@ -1,0 +1,26 @@
+{
+    "workspace.library": [
+        "/home/g/.local/share/nvim/lazy/neodev.nvim/types/stable",
+        "/tmp/.mount_nvimgnO4wJ/usr/share/nvim/runtime/lua",
+        "/home/g/.local/share/nvim/lazy/nvim-dap/lua",
+        "/home/g/.local/share/nvim/lazy/telescope-git-grep.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/gruvbox.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/telescope.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/mason.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/plenary.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/mason-lspconfig.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/which-key.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/nvim-lspconfig/lua",
+        "/home/g/.local/share/nvim/lazy/neodev.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/lsp-zero.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/lazy.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/rust-tools.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/lualine.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/telescope-fzf-native.nvim/lua",
+        "/home/g/.local/share/nvim/lazy/nvim-tree.lua/lua",
+        "/home/g/.config/nvim/lua",
+        "${3rd}/luv/library",
+        "${3rd}/luv/library"
+    ],
+    "workspace.checkThirdParty": false
+}

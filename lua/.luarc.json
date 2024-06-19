@@ -20,6 +20,7 @@
         "/home/g/.local/share/nvim/lazy/nvim-tree.lua/lua",
         "/home/g/.config/nvim/lua",
         "${3rd}/luv/library",
+        "${3rd}/luv/library",
         "${3rd}/luv/library"
     ],
     "workspace.checkThirdParty": false

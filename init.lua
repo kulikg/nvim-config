@@ -13,7 +13,19 @@ vim.opt.rtp:prepend(lazypath)
 
 require('vimsetup')
 
-require('lazy').setup{
+require('lazy').setup {
+   {
+        'EdenEast/nightfox.nvim',
+        config = function()
+            require('nightfox').setup{
+                options = {
+                    transparent = true
+                }
+            }
+            vim.cmd [[ colorscheme terafox ]]
+            vim.cmd [[ hi LspInlayHint gui=italic ]]
+        end
+    },
     'nvim-lua/plenary.nvim',
     'FabijanZulj/blame.nvim',
 
@@ -23,31 +35,17 @@ require('lazy').setup{
         config = function()
             vim.o.timeout = true
             vim.o.timeoutlen = 300
-            local wk = require('which-key')
-            wk.register({
-                ['<leader>'] = {
-                    s = {
-                        name = "Telescope",
-                        g = { "<cmd>Telescope git_grep grep<cr>", "git_grep grep" },
-                        l = { "<cmd>Telescope git_grep live_grep<cr>", "git_grep live_grep" },
-                        e = { "<cmd>Telescope git_files<cr>", "git_files" },
-                        d = { "<cmd>Telescope lsp_definitions<cr>", "lsp definitions" },
-                        D = { "<cmd>Telescope diagnostics<cr>", "lsp diagnostics" },
-                        i = { "<cmd>Telescope lsp_implementations<cr>", "lsp implementations" },
-                        s = { "<cmd>Telescope lsp_workspace_symbols<cr>", "lsp workspace symbols" },
-                        r = { "<cmd>Telescope lsp_references<cr>", "lsp references" },
-                        ['('] = { "<cmd>Telescope lsp_outgoing_calls<cr>", "lsp outgoing calls" },
-                        [')'] = { "<cmd>Telescope lsp_incoming_calls<cr>", "lsp incoming calls" },
-                        j = { "<cmd>Telescope jumplist<cr>", "location history" }
-                    },
-                    t = {
-                        name = "Toggleterm",
-                        t = { "<cmd>ToggleTerm<cr>", "toggle terminal" },
-                        s = { "<cmd>ToggleTermSendCurrentLine<cr>", "exec line in terminal" },
-                    },
-                }
-            })
         end,
+    },
+
+    {
+        "folke/trouble.nvim",
+        opts = {
+            win = {
+                position = 'top'
+            }
+        },
+        cmd = "Trouble"
     },
 
     {
@@ -106,8 +104,16 @@ require('lazy').setup{
             },
         },
         config = function()
+            local open_with_trouble = require("trouble.sources.telescope").open
+
             local ts = require('telescope')
             ts.setup {
+                defaults = {
+                    mappings = {
+                        i = { ['<S-Tab>'] = open_with_trouble },
+                        n = { ['<S-Tab>'] = open_with_trouble },
+                    },
+                },
                 pickers = {
                     git_files = {
                         previewer = false
@@ -120,6 +126,26 @@ require('lazy').setup{
 
             ts.load_extension('git_grep')
             ts.load_extension('fzf')
+
+            local wk = require('which-key')
+            local t = require('telescope.builtin')
+
+            wk.add({
+                {"<leader>s", group = "Telescope"},
+                {"<leader>sf", "<cmd>Telescope git_grep<cr>", desc = "git_grep" },
+                {"<leader>se", t.git_files, desc = "git_files" },
+                {"<leader>sd", t.lsp_definitions, desc = "lsp_definitions" },
+                {"<leader>sD", t.diagnostics, desc = "diagnostics" },
+                {"<leader>si", t.lsp_implementations, desc = "lsp_implementations" },
+                {"<leader>ss", t.lsp_workspace_symbols, desc = "lsp_workspace_symbols" },
+                {"<leader>sr", t.lsp_references, desc = "lsp_references" },
+                {"<leader>s(", t.lsp_outgoing_calls, desc = "lsp_outgoing_calls" },
+                {"<leader>s)", t.lsp_incoming_calls, desc = "lsp_incoming_calls" },
+                {"<leader>sj", t.jumplist, desc = "jumplist" },
+
+                {"<leader>t", group = "Toggle tools" },
+                {"<leader>td", "<cmd>Trouble diagnostics<cr>", desc = "toggle troubles" }
+            })
 
         end
     },
@@ -203,25 +229,20 @@ require('lazy').setup{
                 server = {
                     on_attach = function(_, _)
                         local wk = require('which-key')
-                        wk.register({
-                            ['<leader>'] = {
-                                r = {
-                                    name = "Rust",
-                                    a = { function() vim.cmd.RustLsp('codeAction') end, "code action" },
-                                    j = { function() vim.cmd.RustLsp('joinLines') end, "join lines" },
-                                    m = { function() vim.cmd.RustLsp('expandMacro') end, "expand macro" },
-                                    i = { function() vim.cmd.RustLsp('moveItem up') end, "move item up" },
-                                    k = { function() vim.cmd.RustLsp('moveItem down') end, "move item down" },
-                                    e = { function() vim.cmd.RustLsp('explainError') end, "explain error" },
-                                    t = { function() vim.cmd.RustLsp('testables') end, "run test" },
-                                    r = { vim.lsp.buf.rename, "refactor rename" },
-                                    f = { vim.lsp.buf.format, "format code" }
-                                },
-                                d = {
-                                    d = { function() vim.cmd.RustLsp('debug') end, "debug rust" }
-                                }
-                            }
+
+                        wk.add({
+                            { "<leader>r", group = "Rust" },
+                            { "<leader>ra", function() vim.cmd.RustLsp("codeAction") end, desc = "codeAction" },
+                            { "<leader>rl", function() vim.cmd.RustLsp("joinLines") end, desc = "joinLines" },
+                            { "<leader>rm", function() vim.cmd.RustLsp("expandMacro") end, desc = "expandMacro" },
+                            { "<leader>ri", function() vim.cmd.RustLsp("moveItem up") end, desc = "moveItem up" },
+                            { "<leader>rj", function() vim.cmd.RustLsp("moveItem down") end, desc = "moveItem down" },
+                            { "<leader>re", function() vim.cmd.RustLsp("explainError") end, desc = "explainError" },
+                            { "<leader>rt", function() vim.cmd.RustLsp("testables") end, desc = "testables" },
+                            { "<leader>rr", vim.lsp.buf.rename, desc = "refactor rename" },
+                            { "<leader>rf", vim.lsp.buf.format, desc = "format code" },
                         })
+
                     end,
                     default_settings = {
                         ['rust-analyzer'] = {
@@ -255,22 +276,25 @@ require('lazy').setup{
     {
         'hrsh7th/nvim-cmp',
         dependencies = {
+            {
+                "L3MON4D3/LuaSnip",
+                version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+                build = "make install_jsregexp"
+            },
             'hrsh7th/cmp-nvim-lsp',
             'hrsh7th/cmp-nvim-lua',
             'hrsh7th/cmp-nvim-lsp-signature-help',
-            'hrsh7th/cmp-vsnip',
             'hrsh7th/cmp-path',
             'hrsh7th/cmp-buffer',
-            'hrsh7th/vim-vsnip',
+            'saadparwaiz1/cmp_luasnip'
         },
         config = function()
             local cmp = require 'cmp'
             cmp.setup({
-                -- Enable LSP snippets
                 snippet = {
                     expand = function(args)
-                        vim.fn['vsnip#anonymous'](args.body)
-                    end,
+                        require'luasnip'.lsp_expand(args.body)
+                    end
                 },
                 mapping = {
                     ['<C-p>'] = cmp.mapping.select_prev_item(),
@@ -299,7 +323,7 @@ require('lazy').setup{
                                 'html', 'vue'
                             },
                             style_sheets = {
-                                "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css",
+                                --"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css",
                             }
                         },
                     },
@@ -314,6 +338,7 @@ require('lazy').setup{
                     { name = 'nvim_lsp_signature_help'},
                     { name = 'nvim_lua', keyword_length = 1 },
                     { name = 'buffer', keyword_length = 1 },
+                    { name = 'luasnip', option = { show_autosnippets = true, use_show_condition = false } }
                 },
                 window = {
                     completion = cmp.config.window.bordered(),
@@ -329,9 +354,9 @@ require('lazy').setup{
                         end
                         local menu_icon ={
                             nvim_lsp = 'λ',
-                            vsnip = '⋗',
-                            buffer = 'Ω',
-                            path = '🖫',
+                            luasnip = '',
+                            buffer = '',
+                            path = '',
                         }
                         item.menu = menu_icon[entry.source.name]
                         return item
@@ -340,6 +365,11 @@ require('lazy').setup{
             })
 
         end
+    },
+
+    {
+        'stevearc/dressing.nvim',
+        opts = {},
     },
 
     {
@@ -365,27 +395,21 @@ require('lazy').setup{
                 dap.toggle_breakpoint(nil, nil, vim.fn.input('Log message: ', curline))
             end
 
-            local breakpoint_with_hitcount = function()
-                dap.toggle_breakpoint(nil, vim.fn.input('Hit count: ', 2))
-            end
-
-            wk.register({
-                ['<leader>'] = {
-                    d = {
-                        b = { function() dap.toggle_breakpoint() end, "toggle breakpoint" },
-                        B = { breakpoint_with_hitcount, "toggle breakpoint with hit count" },
-                        n = { function() dap.step_into() end, "step into" },
-                        o = { function() dap.step_out() end, "step out" },
-                        N = { function() dap.step_over() end, "step over" },
-                        c = { function() dap.run_to_cursor() end, "run to cursor" },
-                        C = { function() dap.continue() end, "continue" },
-                        r = { function() dap.restart() end, "restart" },
-                        l = { logger, "log line" },
-                        X = { function() dap.clear_breakpoints() end, "clear breakpoints" },
-                        q = { function() dap.close() end, "quit" },
-                    }
-                }
+            wk.add({
+                { "<leader>d", group = "Debug" },
+                { "<leader>db", dap.toggle_breakpoint, desc = "toggle_breakpoint" },
+                { "<leader>dB", function() dap.toggle_breakpoint(nil, vm.fn.input('Hit count: ', 2)) end, desc = "toggle_breakpoint with hit count" },
+                { "<leader>dn", dap.step_into, desc = "step_into" },
+                { "<leader>do", dap.step_into, desc = "step_out" },
+                { "<leader>dN", dap.step_over, desc = "step_over" },
+                { "<leader>dc", dap.run_to_cursor, desc = "run_to_cursor" },
+                { "<leader>dC", dap.continue, desc = "continue" },
+                { "<leader>dr", dap.restart, desc = "restart" },
+                { "<leader>dl", logger, desc = "log line" },
+                { "<leader>dX", dap.clear_breakpoints, desc = "clear_breakpoints" },
+                { "<leader>dq", dap.close, desc = "close" },
             })
+
         end
     },
 
@@ -399,20 +423,18 @@ require('lazy').setup{
             local dapui = require('dapui')
             dapui.setup()
             local wk = require('which-key')
-            wk.register({
-                ['<leader>'] = {
-                    d = {
-                        R = { function() dapui.float_element('repl', {enter = true}) end, "show repl" },
-                        W = { function() dapui.float_element('watches', {enter = true}) end, "show watches" },
-                        L = { function() dapui.float_element('breakpoints', {enter = true}) end, "show breakpoint" },
-                        E = { function() dapui.eval(vim.fn.input('Eval: ', vim.fn.getreg('0')), {enter = true}) end, "eval expression" },
-                    }
-                }
+
+            wk.add({
+                { "<leader>dR", function() dapui.float_element('repl', {enter = true}) end, desc = "show repl" },
+                { "<leader>dW", function() dapui.float_element('watches', {enter = true}) end, desc = "show watches" },
+                { "<leader>dL", function() dapui.float_element('breakpoints', {enter = true}) end, desc = "show breakpoints" },
+                { "<leader>dE", function() dapui.eval(vim.fn.input('Eval: ', vim.fn.getreg('0')), {enter = true}) end, desc = "eval expression" }
             })
+
         end
     },
 
-    {
+   {
         'nvim-treesitter/nvim-treesitter',
         config = function()
             require('nvim-treesitter.configs').setup({
@@ -465,6 +487,34 @@ require('lazy').setup{
     },
 
     {
+        'tanvirtin/vgit.nvim',
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+        },
+        config = function()
+            local vgit = require 'vgit'
+            vgit.setup{
+                settings = {
+                    live_blame = {
+                        enabled = false
+                    }
+                }
+            }
+            local wk = require('which-key')
+
+            wk.add({
+                { "<leader>g", group = "vgit" },
+                { "<leader>gd", vgit.project_diff_preview, desc = "project_diff_preview" },
+                { "<leader>gl", vgit.project_logs_preview, desc = "project_logs_preview" },
+                { "<leader>gc", vgit.project_hunks_qf, desc = "project_hunks_qf" },
+                { "<leader>gk", vgit.hunk_up, desc = "hunk_up" },
+                { "<leader>gj", vgit.hunk_down, desc = "hunk_down" },
+            })
+
+       end
+    },
+
+--[[    {
         'NeogitOrg/neogit',
         dependencies = {
             'nvim-lua/plenary.nvim',
@@ -475,7 +525,7 @@ require('lazy').setup{
         config = function()
             require('neogit').setup({})
         end
-    },
+    }, ]]
 
     {
         'j-hui/fidget.nvim',
@@ -485,31 +535,37 @@ require('lazy').setup{
         end
     },
 
-    {
-        'xiyaowong/transparent.nvim',
-        config = function()
+--    {
+--        'xiyaowong/transparent.nvim',
+--        config = function()
 
             --vim.cmd [[ hi @lsp.type.interface guifg=gray ]]
             --vim.cmd [[ hi @lsp.type.class guifg=white ]]
             --vim.cmd [[ hi @lsp.type.namespace guifg=lightgray ]]
             --vim.cmd [[ hi @lsp.type.enum guifg=lightgreen ]]
-            vim.cmd [[ hi debugPC guibg=darkblue ]]
-            vim.cmd [[ colorscheme slate ]]
+--            vim.cmd [[ colorscheme terafox ]]
+--            vim.cmd [[ hi debugPC guibg=darkblue ]]
+--            vim.cmd [[ hi clear MatchParen ]]
+--            vim.cmd [[ hi MatchParen cterm=bold,underline gui=bold guibg=gray ]]
+--            vim.cmd [[ hi LspInlayHint gui=italic guifg=darkgreen ]]
+--            vim.cmd [[ hi FloatBorder guifg=0 ]]
+--            vim.cmd [[ hi NormalFloat guifg=0 ]]
+--            vim.cmd [[ hi Comment gui=italic ]]
 
-            local transparent = require("transparent")
-            transparent.setup({
-                groups = {
-                    'Normal', 'NormalNC', 'Comment', 'Constant', 'Special', 'Identifier',
-                    'Statement', 'PreProc', 'Type', 'Underlined', 'Todo', 'String', 'Function',
-                    'Conditional', 'Repeat', 'Operator', 'Structure', 'LineNr', 'NonText',
-                    'SignColumn', 'CursorLineNr', 'EndOfBuffer',
-                },
-                extra_groups = {},
-                exclude_groups = {}
-            })
+--            local transparent = require("transparent")
+--            transparent.setup({
+--                groups = {
+--                    'Normal', 'NormalNC', 'Comment', 'Constant', 'Special', 'Identifier',
+--                    'Statement', 'PreProc', 'Type', 'Underlined', 'Todo', 'String', 'Function',
+--                    'Conditional', 'Repeat', 'Operator', 'Structure', 'LineNr', 'NonText',
+--                    'SignColumn', 'CursorLineNr', 'EndOfBuffer',
+--                },
+--                extra_groups = {},
+--                exclude_groups = {}
+--            })
 
-        end
-    },
+--        end
+--    },
 
     {
         'akinsho/toggleterm.nvim',
@@ -518,10 +574,18 @@ require('lazy').setup{
                 direction = 'float',
                 shade_terminal = true
             }
-        end
+            local wk = require('which-key')
+
+            wk.add({
+                { "<leader>t", group = "Toggle tools" },
+                { "<leader>tt", "<cmd>ToggleTerm<cr>", desc = "toggle terminal" },
+                { "<leader>ts", "<cmd>ToggleTermSendCurrentLine<cr>", desc = "exec line in terminal" }
+            })
+
+            end
     },
 
-   {
+    {
         "Jezda1337/nvim-html-css",
         dependencies = {
             "nvim-treesitter/nvim-treesitter",

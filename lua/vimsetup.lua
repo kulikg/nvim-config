@@ -15,15 +15,18 @@ vim.opt.swapfile = false
 vim.opt.scrolloff = 4
 vim.g.mapleader = ","
 
-vim.opt.completeopt = {'menuone', 'noselect', 'noinsert'}
+--vim.opt.completeopt = {'menuone', 'noselect', 'noinsert'}
 vim.opt.shortmess = vim.opt.shortmess + { c = true}
---vim.api.nvim_set_option('updatetime', 300)
 
--- Fixed column for diagnostics to appear
--- Show autodiagnostic popup on cursor hover_range
--- Goto previous / next diagnostic warning / error 
--- Show inlay_hints more frequently 
-vim.cmd([[
-    set signcolumn=yes
-    autocmd CursorHold * lua vim.diagnostic.open_float(nil, { focusable = false })
-]])
+vim.api.nvim_create_autocmd('CursorHold', {
+    pattern = { '*' },
+    callback = function()
+        vim.diagnostic.open_float(nil, { focusable = false })
+    end
+})
+
+vim.opt.signcolumn='number'
+
+--vim.cmd([[
+--    set signcolumn=number
+--]])

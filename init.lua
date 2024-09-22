@@ -11,7 +11,34 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-require 'vimsetup'
+vim.opt.backup = false
+vim.opt.writebackup = false
+vim.opt.updatetime = 300
+vim.opt.updatetime = 300
+vim.opt.signcolumn = "yes"
+vim.opt.number = true
+vim.opt.expandtab = true
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.smartindent = true
+vim.opt.hlsearch = true
+vim.opt.incsearch = true
+vim.opt.swapfile = false
+vim.opt.scrolloff = 4
+vim.g.mapleader = ","
+
+vim.opt.shortmess = vim.opt.shortmess + { c = true}
+
+vim.api.nvim_create_autocmd('CursorHold', {
+    pattern = { '*' },
+    callback = function()
+        vim.diagnostic.open_float(nil, { focusable = false })
+    end
+})
+
+vim.opt.signcolumn='number'
+
 
 require 'lazy' .setup {
     {
@@ -52,6 +79,9 @@ require 'lazy' .setup {
     {
         'nvim-tree/nvim-tree.lua',
         opts = {
+                diagnostics = {
+                    enable = true
+                },
                 view = {
                     width = 60,
                     float = {
@@ -208,7 +238,7 @@ require 'lazy' .setup {
             'folke/which-key.nvim',
             'mfussenegger/nvim-dap'
         },
-        version = '^4',
+        version = '^5',
         lazy = false,
         config = function()
             vim.g.rustaceanvim = {
@@ -224,38 +254,55 @@ require 'lazy' .setup {
 
                         wk.add {
                             { "<leader>r", group = "Rust" },
-                            { "<leader>ra", function() vim.cmd.RustLsp("codeAction") end, desc = "codeAction" },
-                            { "<leader>rl", function() vim.cmd.RustLsp("joinLines") end, desc = "joinLines" },
+                            { "<leader>ra", function() vim.cmd.RustLsp("codeAction") end, desc = "codeAction",  mode = { "n", "v" } },
+                            { "<leader>rl", function() vim.cmd.RustLsp("joinLines") end, desc = "joinLines",  mode = { "n", "v" } },
                             { "<leader>rm", function() vim.cmd.RustLsp("expandMacro") end, desc = "expandMacro" },
                             { "<leader>ri", function() vim.cmd.RustLsp("moveItem up") end, desc = "moveItem up" },
                             { "<leader>rj", function() vim.cmd.RustLsp("moveItem down") end, desc = "moveItem down" },
                             { "<leader>re", function() vim.cmd.RustLsp("explainError") end, desc = "explainError" },
                             { "<leader>rt", function() vim.cmd.RustLsp("testables") end, desc = "testables" },
                             { "<leader>rr", vim.lsp.buf.rename, desc = "refactor rename" },
-                            { "<leader>rf", vim.lsp.buf.format, desc = "format code" },
+                            { "<leader>rf", vim.lsp.buf.format, desc = "format code",  mode = { "n", "v" } },
                             { "<leader>dd", function() vim.cmd.RustLsp("debuggables") end, desc = "debuggables" },
                         }
 
                     end,
                     default_settings = {
                         ['rust-analyzer'] = {
+                            assist = {
+                                importEnforceGranularity = true,
+                                importPrefix = 'crate',
+                            },
+
                             diagnostics = {
                                 enable = true,
                             },
+
                             imports = {
                                 granularity = {
                                     group = "module",
                                 },
                                 prefix = "self",
                             },
+
                             cargo = {
+                                allFeatures = true,
                                 buildScripts = {
                                     enable = true,
                                 }
                             },
+
+                            inlayHints = {
+                                lifetimeElisionHints = {
+                                    enable = true,
+                                    useParameterNames = true,
+                                },
+                            },
+
                             procMacro = {
                                 enable = true
                             },
+
                             checkOnSave = {
                                 command = 'clippy',
                             },
@@ -579,7 +626,30 @@ vim.diagnostic.config({
 })
 
 
---vim.o.background = 'dark'
+local opts = {
+	noremap = false
+}
 
-require 'keybindings'
+local function nmap(key, action, o)
+	vim.keymap.set('n', key, action, o or opts)
+end
+
+nmap('<leader>l', '<c-w><c-l>')
+nmap('<leader>j', '<c-w><c-j>')
+nmap('<leader>k', '<c-w><c-k>')
+nmap('<leader>i', '<c-w><c-i>')
+nmap('<leader>h', '<c-w><c-h>')
+nmap("<backspace>", "<c-o>")
+
+nmap('<Tab>', '<cmd>NvimTreeFindFileToggle<cr>')
+
+
+vim.cmd [[ tnoremap <Esc> <C-\><C-n> ]]
+
+vim.cmd([[
+let g:vimspector_sidebar_width = 85
+let g:vimspector_bottombar_height = 15
+let g:vimspector_terminal_maxwidth = 70
+]])
+
 

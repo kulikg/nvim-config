@@ -9,25 +9,27 @@ if not vim.loop.fs_stat(lazypath) then
         lazypath,
     })
 end
-vim.opt.rtp:prepend(lazypath)
 
+vim.g.mapleader = ","
+vim.g.mkdp_filetypes = { "markdown" }
+vim.o.timeout = true
+vim.o.timeoutlen = 300
 vim.opt.backup = false
-vim.opt.writebackup = false
-vim.opt.updatetime = 300
-vim.opt.updatetime = 300
-vim.opt.signcolumn = "yes"
-vim.opt.number = true
 vim.opt.expandtab = true
-vim.opt.shiftwidth = 4
-vim.opt.tabstop = 4
-vim.opt.softtabstop = 4
-vim.opt.smartindent = true
 vim.opt.hlsearch = true
 vim.opt.incsearch = true
-vim.opt.swapfile = false
+vim.opt.number = true
+vim.opt.rtp:prepend(lazypath)
 vim.opt.scrolloff = 4
-vim.g.mapleader = ","
-
+vim.opt.shiftwidth = 4
+vim.opt.signcolumn = "yes"
+vim.opt.smartindent = true
+vim.opt.softtabstop = 4
+vim.opt.swapfile = false
+vim.opt.tabstop = 4
+vim.opt.updatetime = 300
+vim.opt.updatetime = 300
+vim.opt.writebackup = false
 vim.opt.shortmess = vim.opt.shortmess + { c = true}
 
 vim.api.nvim_create_autocmd('CursorHold', {
@@ -43,27 +45,19 @@ vim.opt.signcolumn='number'
 require 'lazy' .setup {
     {
         'EdenEast/nightfox.nvim',
-        config = function()
-            require 'nightfox' .setup {
-                options = {
-                    transparent = true,
-                    styles = {
-                        comments = 'italic',
-                    }
+        opts = {
+            options = {
+                transparent = true,
+                styles = {
+                    comments = 'italic',
                 }
             }
-            vim.cmd [[ colorscheme terafox ]]
-            vim.cmd [[ hi LspInlayHint gui=italic ]]
-        end
+        }
     },
 
     {
         'folke/which-key.nvim',
         event = 'VeryLazy',
-        config = function()
-            vim.o.timeout = true
-            vim.o.timeoutlen = 300
-        end,
     },
 
     {
@@ -77,49 +71,167 @@ require 'lazy' .setup {
     },
 
     {
+        "mfussenegger/nvim-jdtls",
+        ft = "java",
+        config = function()
+            local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h:t')
+
+            local workspace_folder = '/tmp/nvim/' .. project_name
+
+            local jdtls_home = require('mason-registry')
+            .get_package('jdtls')
+            :get_install_path()
+
+            local debug_home = require('mason-registry')
+            .get_package('java-debug-adapter')
+            :get_install_path()
+
+            local capabilities = vim.lsp.protocol.make_client_capabilities()
+            capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
+            local bundles = {}
+            vim.list_extend(bundles, vim.split(vim.fn.glob(debug_home .. '/extension/server/com.microsoft.java.debug.plugin-*.jar', true), "\n"))
+            vim.list_extend(bundles, vim.split(vim.fn.glob("/home/gabor/envsetup/vscode-java-test/server/*.jar", true), "\n"))
+            local root_dir = vim.fs.dirname(vim.fs.find({'gradlew', '.git', 'mvnw', 'pom.xml'}, { upward = true })[1])
+
+            vim.g.jdtls = {
+                config = {
+                    flags = {
+                        debounce_text_changes = 80,
+                    },
+                    capabilities = capabilities,
+
+                    init_options= {
+                        bundles = bundles
+                    },
+                    root_dir = root_dir,
+                    settings = {
+                        java = {
+                            signatureHelp = { enabled = true },
+                            contentProvider = { preferred = 'fernflower' },  -- Use fernflower to decompile library code
+                            -- Specify any completion options
+                            sources = {
+                                organizeImports = {
+                                    starThreshold = 9999;
+                                    staticStarThreshold = 9999;
+                                },
+                            },
+                            -- How code generation should act
+                            codeGeneration = {
+                                toString = {
+                                    template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}"
+                                },
+                                hashCodeEquals = {
+                                    useJava7Objects = true,
+                                },
+                                useBlocks = true,
+                            },
+                            configuration = {
+                                runtimes = {
+                                    {
+                                        name = "JavaSE-17",
+                                        path = "/usr/lib/jvm/java-17-openjdk-amd64/",
+                                    },
+                                    {
+                                        name = "JavaSE-1.8",
+                                        path = "/usr/lib/jvm/java-1.8.0-openjdk-amd64/",
+                                    },
+                                }
+                            }
+                        }
+                    },
+
+                    cmd = {
+                        "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+                        '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+                        '-Dosgi.bundles.defaultStartLevel=4',
+                        '-Declipse.product=org.eclipse.jdt.ls.core.product',
+                        '-Dlog.protocol=true',
+                        '-Dlog.level=ERROR',
+                        '-Xmx4g',
+                        '--add-modules=ALL-SYSTEM',
+                        '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+                        '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+                        '-javaagent:' .. jdtls_home .. '/lombok.jar',
+                        '-jar', vim.fn.glob(jdtls_home .. '/plugins/org.eclipse.equinox.launcher_*.jar'),
+                        '-configuration', jdtls_home .. '/config_linux',
+                        '-data', workspace_folder,
+                    },
+                }
+            }
+            local jdtls = require 'jdtls'
+            jdtls.start_or_attach(vim.g.jdtls.config)
+
+            local wk = require 'which-key'
+            wk.add {
+                { "<leader>j", group = "Java"},
+                { "<leader>jt", jdtls.test_nearest_method, desc = "test nearest method" },
+                { "<leader>jT", jdtls.test_class, desc = "test class" },
+                { "<leader>ja", vim.lsp.buf.code_action, desc = "codeAction",  mode = { "n", "v" } },
+                { "<leader>jr", vim.lsp.buf.rename, desc = "refactor rename" },
+                { "<leader>jf", vim.lsp.buf.format, desc = "format code",  mode = { "n", "v" } },
+                { "<leader>jo", jdtls.organize_imports, desc = "organize imports" },
+                { "<leader>je", jdtls.extract_variable, desc = "extract variable" },
+                { "<leader>jc", jdtls.extract_constant, desc = "extract constant" },
+                { "<leader>jm", jdtls.extract_method, desc = "extract method" },
+                { "<leader>js", jdtls.super_implementation, desc = "super implementation" },
+                { "<leader>jS", jdtls.jshell, desc = "jshell with classpath" },
+                { "<leader>sd", vim.lsp.buf.definition, desc = "lsp_definitions" }
+            }
+
+        end
+    },
+
+    {
         'nvim-tree/nvim-tree.lua',
         opts = {
-                diagnostics = {
-                    enable = true
-                },
-                view = {
-                    width = 60,
-                    float = {
-                        enable = true,
-                        open_win_config = {
-                            width = 80,
-                            height = 50,
-                        },
+            diagnostics = {
+                enable = true
+            },
+            view = {
+                width = 60,
+                float = {
+                    enable = true,
+                    open_win_config = {
+                        width = 80,
+                        height = 50,
                     },
                 },
-                actions = {
-                    open_file = {
-                        window_picker = {
-                            enable = false
-                        }
+            },
+            actions = {
+                open_file = {
+                    window_picker = {
+                        enable = false
                     }
-                },
-                filters = {
-                    dotfiles = true
-                },
-                on_attach = function(bufnr)
-                    local api = require 'nvim-tree.api'
-                    api.config.mappings.default_on_attach(bufnr)
-                    vim.keymap.set(
-                        'n', '<Tab>', api.tree.toggle,
-                        {
-                            noremap = false,
-                            silent = true,
-                            buffer = bufnr
-                        }
-                    )
-                end
-            }
+                }
+            },
+            filters = {
+                dotfiles = true
+            },
+            on_attach = function(bufnr)
+                local api = require 'nvim-tree.api'
+                api.config.mappings.default_on_attach(bufnr)
+                vim.keymap.set(
+                    'n', '<Tab>', api.tree.toggle,
+                    {
+                        noremap = false,
+                        silent = true,
+                        buffer = bufnr
+                    }
+                )
+            end
+        }
+    },
+
+    {
+        "iamcco/markdown-preview.nvim",
+        cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+        build = "cd app && ./install.sh",
+        ft = { "markdown" },
     },
 
     {
         'nvim-telescope/telescope.nvim',
-        tag = '0.1.4',
+        tag = '0.1.8',
         dependencies = {
             'nvim-lua/plenary.nvim',
             {
@@ -161,10 +273,12 @@ require 'lazy' .setup {
                 {"<leader>s", group = "Telescope"},
                 {"<leader>sf", "<cmd>Telescope git_grep<cr>", desc = "git_grep" },
                 {"<leader>se", t.git_files, desc = "git_files" },
+                {"<leader>sh", t.oldfiles, desc = "oldfiles" },
                 {"<leader>sd", t.lsp_definitions, desc = "lsp_definitions" },
+                {"<leader>st", t.lsp_type_definitions, desc = "lsp_definitions" },
                 {"<leader>sD", t.diagnostics, desc = "diagnostics" },
                 {"<leader>si", t.lsp_implementations, desc = "lsp_implementations" },
-                {"<leader>ss", t.lsp_workspace_symbols, desc = "lsp_workspace_symbols" },
+                {"<leader>ss", t.lsp_dynamic_workspace_symbols, desc = "lsp_workspace_symbols" },
                 {"<leader>sr", t.lsp_references, desc = "lsp_references" },
                 {"<leader>s(", t.lsp_outgoing_calls, desc = "lsp_outgoing_calls" },
                 {"<leader>s)", t.lsp_incoming_calls, desc = "lsp_incoming_calls" },
@@ -201,21 +315,53 @@ require 'lazy' .setup {
             },
 
             {
-                'folke/neodev.nvim',
+                "folke/lazydev.nvim",
+                ft = "lua", -- only load on lua files
                 opts = {
-                    override = function(_, library)
-                        library.enabled = true
-                        library.plugins = true
-                        library.types = true
-                    end,
-                }
+                    library = {
+                        -- See the configuration section for more details
+                        -- Load luvit types when the `vim.uv` word is found
+                        { path = "luvit-meta/library", words = { "vim%.uv" } },
+                    },
+                },
             }
+
 
         },
         config = function()
             local lspconfig = require 'lspconfig'
             require 'cmp_nvim_lsp'
-            lspconfig.lua_ls.setup{}
+            lspconfig.lua_ls.setup{
+                on_init = function(client)
+                    local path = client.workspace_folders[1].name
+                    if vim.loop.fs_stat(path..'/.luarc.json') or vim.loop.fs_stat(path..'/.luarc.jsonc') then
+                        return
+                    end
+
+                    client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
+                        runtime = {
+                            -- Tell the language server which version of Lua you're using
+                            -- (most likely LuaJIT in the case of Neovim)
+                            version = 'LuaJIT'
+                        },
+                        -- Make the server aware of Neovim runtime files
+                        workspace = {
+                            checkThirdParty = false,
+                            library = {
+                                vim.env.VIMRUNTIME,
+                                -- Depending on the usage, you might want to add additional paths here.
+                                "${3rd}/luv/library"
+                                -- "${3rd}/busted/library",
+                            }
+                            -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
+                            -- library = vim.api.nvim_get_runtime_file("", true)
+                        }
+                    })
+                end,
+                settings = {
+                    Lua = {}
+                }
+            }
             lspconfig.volar.setup {
                 filetypes = {'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'json'},
                 init_options = {
@@ -228,7 +374,6 @@ require 'lazy' .setup {
             lspconfig.dockerls.setup{}
             lspconfig.yamlls.setup{}
             vim.lsp.inlay_hint.enable(true)
-
         end,
     },
 
@@ -236,7 +381,7 @@ require 'lazy' .setup {
         'mrcjkb/rustaceanvim',
         dependencies = {
             'folke/which-key.nvim',
-            'mfussenegger/nvim-dap'
+            'mfussenegger/nvim-dap',
         },
         version = '^5',
         lazy = false,
@@ -263,7 +408,7 @@ require 'lazy' .setup {
                             { "<leader>rt", function() vim.cmd.RustLsp("testables") end, desc = "testables" },
                             { "<leader>rr", vim.lsp.buf.rename, desc = "refactor rename" },
                             { "<leader>rf", vim.lsp.buf.format, desc = "format code",  mode = { "n", "v" } },
-                            { "<leader>dd", function() vim.cmd.RustLsp("debuggables") end, desc = "debuggables" },
+                            { "<leader>dd", function() vim.cmd.RustLsp("debug") end, desc = "debuggables" },
                         }
 
                     end,
@@ -331,7 +476,6 @@ require 'lazy' .setup {
         config = function()
             local cmp = require 'cmp'
             cmp.setup({
---            opts = {
                 snippet = {
                     expand = function(args)
                         require 'luasnip' .lsp_expand(args.body)
@@ -364,7 +508,7 @@ require 'lazy' .setup {
                                 'html', 'vue'
                             },
                             style_sheets = {
-                                --"https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css",
+                                "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css",
                             }
                         },
                     },
@@ -411,12 +555,12 @@ require 'lazy' .setup {
     {
         'stevearc/dressing.nvim',
         opts = {
-                select = {
-                    builtin = {
-                        max_width = { 180, 0.9 }
-                    }
+            select = {
+                builtin = {
+                    max_width = { 180, 0.9 }
                 }
             }
+        }
     },
 
     {
@@ -424,12 +568,10 @@ require 'lazy' .setup {
         dependencies = {
             {
                 'theHamsta/nvim-dap-virtual-text',
-                config = function()
-                    require('nvim-dap-virtual-text').setup{
-                        all_references = true,
-                        virt_text_pos = 'eol'
-                    }
-                end
+                opts = {
+                    all_references = true,
+                    virt_text_pos = 'eol'
+                }
             }
         },
         config = function()
@@ -445,7 +587,7 @@ require 'lazy' .setup {
             wk.add({
                 { "<leader>d", group = "Debug" },
                 { "<leader>db", dap.toggle_breakpoint, desc = "toggle_breakpoint" },
-                { "<leader>dB", function() dap.toggle_breakpoint(nil, vm.fn.input('Hit count: ', 2)) end, desc = "toggle_breakpoint with hit count" },
+                { "<leader>dB", function() dap.toggle_breakpoint(nil, vim.fn.input('Hit count: ', 2)) end, desc = "toggle_breakpoint with hit count" },
                 { "<leader>dn", dap.step_into, desc = "step_into" },
                 { "<leader>do", dap.step_into, desc = "step_out" },
                 { "<leader>dN", dap.step_over, desc = "step_over" },
@@ -475,14 +617,17 @@ require 'lazy' .setup {
                 { "<leader>dR", function() dapui.float_element('repl', {enter = true}) end, desc = "show repl" },
                 { "<leader>dW", function() dapui.float_element('watches', {enter = true}) end, desc = "show watches" },
                 { "<leader>dL", function() dapui.float_element('breakpoints', {enter = true}) end, desc = "show breakpoints" },
-                { "<leader>dE", function() dapui.eval(vim.fn.input('Eval: ', vim.fn.getreg('0')), {enter = true}) end, desc = "eval expression" },
+                { "<leader>dT", function() dapui.float_element('console', {width = 197, height = 58, enter = true}) end, desc = "show console" },
+                { "<leader>de", function() dapui.eval() end, desc = "eval variable", mode = { 'n' } },
+                { "<leader>dE", function() dapui.eval(vim.ui.input('Eval: ', vim.fn.getline(".")), {enter = true}) end, desc = "eval expression" },
+                { "<leader>de", function() dapui.eval(vim.ui.input('Eval: ', vim.fn.getreg("*")), {enter = true} ) end, desc = "eval expression", mode = { 'v' }},
                 { "<leader>dt", dapui.toggle, desc = "dapui toggle" }
             }
 
         end
     },
 
-   {
+    {
         'nvim-treesitter/nvim-treesitter',
         opts = {
             ensure_installed = {'rust', 'lua'},
@@ -555,16 +700,17 @@ require 'lazy' .setup {
                 { "<leader>gd", vgit.project_diff_preview, desc = "project_diff_preview" },
                 { "<leader>gl", vgit.project_logs_preview, desc = "project_logs_preview" },
                 { "<leader>gc", vgit.project_hunks_qf, desc = "project_hunks_qf" },
+                { "<leader>gh", vgit.buffer_hunk_preview, desc = "buffer_hunk_preview" },
                 { "<leader>gk", vgit.hunk_up, desc = "hunk_up" },
                 { "<leader>gj", vgit.hunk_down, desc = "hunk_down" },
             })
 
-       end
+        end
     },
 
     {
         'j-hui/fidget.nvim',
-        tag = 'legacy',
+        tag = 'v1.4.5',
         config = true,
     },
 
@@ -578,12 +724,11 @@ require 'lazy' .setup {
             local wk = require('which-key')
 
             wk.add({
---                { "<leader>t", group = "Toggle tools" },
                 { "<leader>tt", "<cmd>ToggleTerm<cr>", desc = "toggle terminal" },
                 { "<leader>ts", "<cmd>ToggleTermSendCurrentLine<cr>", desc = "exec line in terminal" }
             })
 
-            end
+        end
     },
 
     {
@@ -596,7 +741,6 @@ require 'lazy' .setup {
     }
 
 }
-
 
 local sign = function(opts)
     vim.fn.sign_define(opts.name, {
@@ -611,7 +755,7 @@ sign({name = 'DiagnosticSignWarn', text = ''})
 sign({name = 'DiagnosticSignHint', text = ''})
 sign({name = 'DiagnosticSignInfo', text = ''})
 
-vim.diagnostic.config({
+vim.diagnostic.config{
     virtual_text = false,
     signs = true,
     update_in_insert = true,
@@ -623,15 +767,15 @@ vim.diagnostic.config({
         header = '',
         prefix = '',
     },
-})
+}
 
 
 local opts = {
-	noremap = false
+    noremap = false
 }
 
 local function nmap(key, action, o)
-	vim.keymap.set('n', key, action, o or opts)
+    vim.keymap.set('n', key, action, o or opts)
 end
 
 nmap('<leader>l', '<c-w><c-l>')
@@ -640,16 +784,15 @@ nmap('<leader>k', '<c-w><c-k>')
 nmap('<leader>i', '<c-w><c-i>')
 nmap('<leader>h', '<c-w><c-h>')
 nmap("<backspace>", "<c-o>")
-
 nmap('<Tab>', '<cmd>NvimTreeFindFileToggle<cr>')
 
 
-vim.cmd [[ tnoremap <Esc> <C-\><C-n> ]]
-
 vim.cmd([[
-let g:vimspector_sidebar_width = 85
-let g:vimspector_bottombar_height = 15
-let g:vimspector_terminal_maxwidth = 70
+tnoremap <Esc> <C-\><C-n>
+autocmd BufNewFile,BufRead *.java lua require 'jdtls' .start_or_attach(vim.g.jdtls.config)
+
+colorscheme terafox
+hi LspInlayHint gui=italic
 ]])
 
 

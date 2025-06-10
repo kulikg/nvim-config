@@ -25,16 +25,16 @@ return {{
             dotfiles = true
         },
         on_attach = function(bufnr)
-            local api = require 'nvim-tree.api'
-            api.config.mappings.default_on_attach(bufnr)
-            vim.keymap.set(
-                'n', '<Tab>', api.tree.toggle,
-                {
-                    noremap = false,
-                    silent = true,
-                    buffer = bufnr
-                }
-            )
+            -- local api = require 'nvim-tree.api'
+            -- api.config.mappings.default_on_attach(bufnr)
+            -- vim.keymap.set(
+            --     'n', '<Tab>', api.tree.toggle,
+            --     {
+            --         noremap = false,
+            --         silent = true,
+            --         buffer = bufnr
+            --     }
+            -- )
         end
     }
 }}

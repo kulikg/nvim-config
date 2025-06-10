@@ -104,8 +104,9 @@ return {
                 },
             })
 
-            -- lspconfig.ts_ls.setup {
-            -- }
+            lspconfig.bashls.setup {
+                capabilities = capabilities,
+            }
 
             lspconfig.docker_compose_language_service.setup {
                 capabilities = capabilities,

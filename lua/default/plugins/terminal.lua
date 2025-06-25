@@ -1,8 +1,7 @@
 return {{
     'akinsho/toggleterm.nvim',
     opts = {
- --       direction = 'float',
-        direction = 'tab',
+        direction = 'horizontal',
         shade_terminals = true,
         start_in_insert = true
     },

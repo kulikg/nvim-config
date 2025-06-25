@@ -7,9 +7,11 @@ return {
 
             local workspace_folder = '/tmp/nvim/' .. project_name
 
-            local jdtls_home = "/Users/kulikgabor/.local/share/nvim/java/jdtls/"
-            local debug_home = "/Users/kulikgabor/.local/share/nvim/java/java-debug/"
-            local test_home = "/Users/kulikgabor/.local/share/nvim/java/vscode-java-test/"
+            local data = vim.fn.stdpath('data')
+
+            local jdtls_home = data .. "/java/jdtls/"
+            local debug_home = data .. "/java/java-debug/"
+            local test_home = data .. "/java/vscode-java-test/"
 
             local capabilities = require('blink.cmp').get_lsp_capabilities();
             local bundles = {}

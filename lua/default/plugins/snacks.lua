@@ -14,7 +14,7 @@ return {{
             -- your configuration comes here
             -- or leave it empty to use the default settings
             -- refer to the configuration section below
-            --    bigfile = { enabled = true },
+            bigfile = { enabled = true },
             --    dashboard = { enabled = true },
 --            explorer = { enabled = true },
             --    indent = { enabled = true },
@@ -92,6 +92,8 @@ return {{
             { "<leader>sf", s.picker.files,                         desc = "files" },
             { "<leader>sg", s.picker.git_grep,                      desc = "git_grep" },
             { "<leader>sG", s.picker.grep,                          desc = "grep" },
+            { "<leader>sp", s.picker.pickers,                       desc = "pickers" },
+            { "<leader>sl", s.picker.lines,                         desc = "lines" },
 
         }
 

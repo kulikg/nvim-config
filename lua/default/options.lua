@@ -23,6 +23,8 @@ vim.opt.signcolumn = "yes"
 vim.opt.termguicolors = true
 vim.splitright = true
 
+vim.opt.clipboard = 'unnamed'
+
 vim.opt.expandtab = true
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4

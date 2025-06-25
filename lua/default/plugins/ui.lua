@@ -1,4 +1,10 @@
+
 return {
+    {
+        'nvim-lualine/lualine.nvim',
+        requires = { 'nvim-tree/nvim-web-devicons', opt = true },
+        opts = {}
+    },
     {
         'HiPhish/rainbow-delimiters.nvim'
     },
@@ -31,7 +37,15 @@ return {
                 position = 'top'
             }
         },
-        cmd = "Trouble"
+        cmd = "Trouble",
+
+        init = function()
+            local wk = require 'which-key'
+            wk.add {
+                { "<leader>t",  group = "Toggle tools" },
+                { "<leader>td", "<cmd>Trouble diagnostics<cr>",  desc = "toggle diagnostics" }
+            }
+        end,
     },
     {
         'folke/which-key.nvim',
@@ -53,6 +67,46 @@ return {
                 end)
             end
 
+            local function close_non_pwd_buffers()
+                local cwd = vim.fn.getcwd()
+                local buffers = vim.api.nvim_list_bufs()
+
+
+                for _, buf in ipairs(buffers) do
+                    if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_is_loaded(buf) then
+                        local buf_name = vim.api.nvim_buf_get_name(buf)
+
+                        if buf_name ~= "" then
+                            local abs_path = vim.fn.fnamemodify(buf_name, ':p')
+                            local match = abs_path:match(cwd)
+                            local con = abs_path:match(":")
+
+                            if not match and not con then
+                                vim.api.nvim_buf_delete(buf, { force = false })
+                            end
+
+                        end
+                    end
+                end
+            end
+
+            local zoom_state = true
+
+            local function zoom()
+                if zoom_state then
+                    vim.cmd[[tab split]]
+                    vim.api.nvim_set_option_value('laststatus', 0, {})
+                    vim.api.nvim_set_option_value('showtabline', 0, {})
+                else
+                    vim.cmd[[tabc]]
+                    vim.api.nvim_set_option_value('laststatus', 2, {})
+                    vim.api.nvim_set_option_value('showtabline', 2, {})
+                end
+                zoom_state = not zoom_state
+            end
+
+            vim.keymap.set('n', '<space>', zoom, { noremap = false })
+
             wk.add {
                 { "<leader>b",  group = "Barbar" },
                 { "<leader>bh", '<Cmd>BufferPrevious<CR>',                   desc = "Previous tab" },
@@ -62,15 +116,18 @@ return {
                 { "<leader>bs", '<Cmd>BufferOrderByDirectory<CR>',           desc = "Sort tabs" },
                 { "<leader>bp", '<Cmd>BufferPin<CR>',                        desc = "Pin tab" },
                 { "<leader>bo", '<Cmd>BufferCloseAllButCurrentOrPinned<CR>', desc = "Keep pinned" },
+                { "<leader>bk", close_non_pwd_buffers,                       desc = "Keep project" },
                 { "<leader>bg", goto_tab,                                    desc = "Goto tab" },
             }
         end,
         opts = {
-            -- lazy.nvim will automatically call setup for you. put your options here, anything missing will use the default:
-            -- animation = true,
-            -- insert_at_start = true,
-            -- …etc.
-        },
-        version = '^1.0.0', -- optional: only update when a new 1.x version is released
+            focus_on_close = 'previous',
+            highlight_alternate = true,
+            icons = {
+                pinned = {button = '', filename = true},
+            },
+            insert_at_end = true,
+
+        }
     }
 }

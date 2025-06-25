@@ -29,8 +29,6 @@ vim.diagnostic.config {
     },
 }
 
---require('keymaps')
-
 vim.cmd([[
 colorscheme terafox
 hi LspInlayHint gui=italic

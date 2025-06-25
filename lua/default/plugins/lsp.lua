@@ -102,6 +102,10 @@ return {
             lspconfig.lemminx.setup {
                 capabilities = capabilities,
             }
+            lspconfig.taplo.setup {
+                capabilities = capabilities,
+            }
+
             vim.lsp.inlay_hint.enable(true)
         end,
     }

@@ -1,4 +1,3 @@
-
 return {
     {
         'nvim-lualine/lualine.nvim',
@@ -71,18 +70,17 @@ return {
                 local cwd = vim.fn.getcwd()
                 local buffers = vim.api.nvim_list_bufs()
 
-
                 for _, buf in ipairs(buffers) do
                     if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_is_loaded(buf) then
                         local buf_name = vim.api.nvim_buf_get_name(buf)
 
                         if buf_name ~= "" then
                             local abs_path = vim.fn.fnamemodify(buf_name, ':p')
-                            local match = abs_path:match(cwd)
+                            local match = abs_path:match(cwd) or abs_path:match("\\[")
                             local con = abs_path:match(":")
 
                             if not match and not con then
-                                vim.api.nvim_buf_delete(buf, { force = false })
+                                require 'mini.bufremove'.delete(buf, false)
                             end
 
                         end

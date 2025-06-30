@@ -1,19 +1,11 @@
 return {
     {
-        'cordx56/rustowl',
-        version = '*', -- Latest stable version
-        build = 'cargo binstall rustowl',
-        lazy = false, -- This plugin is already lazy
-        opts = {},
-    },
-
-    {
         'mrcjkb/rustaceanvim',
         dependencies = {
             'folke/which-key.nvim',
             'mfussenegger/nvim-dap',
         },
-        version = '^5',
+        version = '^6',
         lazy = false,
         config = function()
             vim.g.rustaceanvim = {
@@ -79,6 +71,7 @@ return {
                             },
 
                             checkOnSave = {
+                                enable = true,
                                 command = 'clippy',
                             },
                         }

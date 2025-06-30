@@ -1,6 +1,6 @@
 vim.lsp.log.set_level(vim.log.levels.OFF)
 
-vim.g.rustfmt_autosave = 1
+vim.g.rustfmt_autosave = 0
 vim.g.rustfmt_fail_silently = 1
 
 vim.g.mapleader = ","
@@ -94,3 +94,22 @@ vim.api.nvim_create_autocmd('CursorHold', {
         vim.diagnostic.open_float(nil, { focusable = false })
     end
 })
+
+vim.api.nvim_create_autocmd('BufReadPost', {
+    pattern = { '*' },
+--	group = m.augroup('last_loc'),
+	callback = function()
+		local exclude = { 'gitcommit', 'commit', 'gitrebase' }
+		local buf = vim.api.nvim_get_current_buf()
+		if vim.tbl_contains(exclude, vim.bo[buf].filetype) then
+			return
+		end
+		local mark = vim.api.nvim_buf_get_mark(buf, '"')
+		local lcount = vim.api.nvim_buf_line_count(buf)
+		if mark[1] > 0 and mark[1] <= lcount then
+			pcall(vim.api.nvim_win_set_cursor, 0, mark)
+			return
+		end
+	end,
+})
+

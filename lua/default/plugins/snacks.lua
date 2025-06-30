@@ -11,16 +11,8 @@ return {{
 
         s.setup {
 
-            -- your configuration comes here
-            -- or leave it empty to use the default settings
-            -- refer to the configuration section below
             bigfile = { enabled = true },
-            --    dashboard = { enabled = true },
---            explorer = { enabled = true },
-            --    indent = { enabled = true },
             input = { enabled = true },
---            win = { enabled = true },
---            layout = { enabled = true },
             scratch = {
                 enabled = true,
                 win_by_ft = {
@@ -59,19 +51,13 @@ return {{
                 },
 
             },
-            toggle = { enabled = true },
---            terminal = { enabled = true },
-            -- notifier = { enabled = true },
-            --    quickfile = { enabled = true },
-            --    scope = { enabled = true },
-            --    scroll = { enabled = true },
-            statuscolumn = {
-                left = { "mark", "sign" },
-                right = { "fold", "git" },
-                enabled =false
-            },
-            --    words = { enabled = true },
         }
+
+        local function grep_word()
+            s.picker.grep {
+                search = vim.fn.expand("<cword>")
+            }
+        end
 
         wk.add {
             { "<leader>tb", function()
@@ -94,6 +80,7 @@ return {{
             { "<leader>sG", s.picker.grep,                          desc = "grep" },
             { "<leader>sp", s.picker.pickers,                       desc = "pickers" },
             { "<leader>sl", s.picker.lines,                         desc = "lines" },
+            { "<leader>sw", grep_word,                              desc = "grep_word" },
 
         }
 

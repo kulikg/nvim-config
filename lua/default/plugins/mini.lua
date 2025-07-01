@@ -8,6 +8,7 @@ return {{
         local trailspace = require 'mini.trailspace'
         local splitjoin = require 'mini.splitjoin'
         local cursorword = require 'mini.cursorword'
+        local sessions = require 'mini.sessions'
         local snacks_win = require 'snacks.win'
 
         jump.setup {
@@ -77,10 +78,35 @@ return {{
             delay = 500
         }
 
+        sessions.setup {
+            file = ''
+        }
+
+        local function save_session()
+            local folder = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
+            vim.ui.input({
+                primpt = "Name: ",
+                default = folder
+            }, function(confirmed)
+                    sessions.write(confirmed)
+                end)
+        end
+
+        local function load_session()
+            local options = vim.iter(sessions.detected):map(function (k) return k end):totable()
+            vim.ui.select(options, {
+                prompt = "Load session"
+            }, function (confirmed)
+                    sessions.read(confirmed)
+            end)
+        end
+
         wk.add {
             { "<leader>m", group = "Mini" },
             { "<leader>mt", trailspace.trim,  desc = "trailspace trim" },
             { "<leader>ms", splitjoin.toggle,  desc = "splitjoin" },
+            { "<leader>ts", save_session,  desc = "save session" },
+            { "<leader>tl", load_session,  desc = "load session" },
             { "<leader>mN", function()
 
                 local dedup = {}

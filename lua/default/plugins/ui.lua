@@ -1,8 +1,17 @@
 return {
     {
+        dependencies = {
+            'arkav/lualine-lsp-progress'
+        },
         'nvim-lualine/lualine.nvim',
         requires = { 'nvim-tree/nvim-web-devicons', opt = true },
-        opts = {}
+        opts = {
+            sections = {
+                lualine_c = {
+                    'lsp_progress'
+                }
+            }
+        }
     },
     {
         'HiPhish/rainbow-delimiters.nvim'

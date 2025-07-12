@@ -105,6 +105,10 @@ return {
             lspconfig.taplo.setup {
                 capabilities = capabilities,
             }
+            lspconfig.pylsp.setup {
+                capabilities = capabilities,
+            }
+
 
             vim.lsp.inlay_hint.enable(true)
         end,

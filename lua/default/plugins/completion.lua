@@ -1,31 +1,14 @@
 return {{
         'saghen/blink.cmp',
-        dependencies = { 
+        dependencies = {
             --            'rafamadriz/friendly-snippets',
-            { 
+            {
                 'L3MON4D3/LuaSnip',
                 version = "v2.*",
                 build = "make install_jsregexp",
                 config = function()
                     local ls = require 'luasnip'
-                    local fmta = require("luasnip.extras.fmt").fmta
-                    local i = ls.insert_node
                     ls.setup {}
-                    ls.add_snippets("all", {
-                        ls.snippet("test",
-                            fmta(
-                                [[
-#[cfg(test)]
-mod tests {
-
-    #[test]
-    fn <> () {
-    }
-
-}
-]], i(1, "test_"))
-                        )
-                    }, { key = "all" })
                 end
 
             },

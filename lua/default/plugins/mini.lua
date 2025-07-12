@@ -35,9 +35,7 @@ return {{
             },
 
             lsp_progress = {
-                enable = true,
-                level = 'INFO',
-                duration_last = 1000,
+                enable = false,
             },
 
             window = {

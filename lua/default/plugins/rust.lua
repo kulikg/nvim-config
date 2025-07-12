@@ -18,20 +18,21 @@ return {
                 server = {
                     on_attach = function(_, _)
                         local wk = require 'which-key'
+                        local commands = require 'rustaceanvim.commands'
 
                         wk.add {
                             { "<leader>r",  group = "Rust" },
-                            { "<leader>ra", function() vim.cmd.RustLsp("codeAction") end,    desc = "codeAction",     mode = { "n", "v" } },
-                            { "<leader>rl", function() vim.cmd.RustLsp("joinLines") end,     desc = "joinLines",      mode = { "n", "v" } },
-                            { "<leader>rm", function() vim.cmd.RustLsp("expandMacro") end,   desc = "expandMacro" },
-                            { "<leader>ri", function() vim.cmd.RustLsp("moveItem up") end,   desc = "moveItem up" },
-                            { "<leader>rj", function() vim.cmd.RustLsp("moveItem down") end, desc = "moveItem down" },
-                            { "<leader>re", function() vim.cmd.RustLsp("explainError") end,  desc = "explainError" },
-                            { "<leader>rt", function() vim.cmd.RustLsp("testables") end,     desc = "testables" },
-                            { "<leader>rr", vim.lsp.buf.rename,                              desc = "refactor rename" },
-                            { "<leader>rf", vim.lsp.buf.format,                              desc = "format code",    mode = { "n", "v" } },
-                            { "<leader>rb", "<cmd>Cargo build --release<cr>",                desc = "cargo build" },
-                            { "<leader>dd", function() vim.cmd.RustLsp("debug") end,         desc = "debuggables" },
+                            { "<leader>ra", function() vim.cmd.RustLsp("codeAction") end,       desc = "codeAction",     mode = { "n" } },
+                            { "<leader>rl", function() vim.cmd.RustLsp("joinLines") end,        desc = "joinLines",      mode = { "n", "v" } },
+                            { "<leader>rm", function() vim.cmd.RustLsp("expandMacro") end,      desc = "expandMacro" },
+                            { "<leader>ri", function() vim.cmd.RustLsp("moveItem", "up") end,   desc = "moveItem up" },
+                            { "<leader>rj", function() vim.cmd.RustLsp("moveItem", "down") end, desc = "moveItem down" },
+                            { "<leader>re", function() vim.cmd.RustLsp("explainError") end,     desc = "explainError" },
+                            { "<leader>rt", function() vim.cmd.RustLsp("testables") end,        desc = "testables" },
+                            { "<leader>rr", vim.lsp.buf.rename,                                 desc = "refactor rename" },
+                            { "<leader>rf", vim.lsp.buf.format,                                 desc = "format code",    mode = { "n", "v" } },
+                            { "<leader>rb", "<cmd>Cargo build --release<cr>",                   desc = "cargo build" },
+                            { "<leader>dd", function() vim.cmd.RustLsp("debug") end,            desc = "debuggables" },
                         }
                     end,
                     default_settings = {

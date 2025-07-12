@@ -95,7 +95,7 @@ return {
                 }
             }
             local jdtls = require 'jdtls'
-            local client_id = jdtls.start_or_attach(vim.g.jdtls.config)
+            jdtls.start_or_attach(vim.g.jdtls.config)
 
             local wk = require 'which-key'
             wk.add {

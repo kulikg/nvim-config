@@ -65,6 +65,7 @@ return {
                                     enable = true,
                                     useParameterNames = true,
                                 },
+                                maxLength = 1000
                             },
 
                             procMacro = {

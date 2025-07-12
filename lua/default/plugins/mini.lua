@@ -77,7 +77,14 @@ return {{
         }
 
         sessions.setup {
-            file = ''
+            file = '',
+            hooks = {
+                pre = {
+                    read = function ()
+                        vim.cmd([[%bd]])
+                    end
+                }
+            }
         }
 
         local function save_session()
@@ -86,8 +93,18 @@ return {{
                 primpt = "Name: ",
                 default = folder
             }, function(confirmed)
-                    sessions.write(confirmed)
-                end)
+                sessions.write(confirmed)
+            end)
+        end
+
+        local function delete_session()
+            local folder = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
+            vim.ui.input({
+                primpt = "Name: ",
+                default = folder
+            }, function(confirmed)
+                sessions.delete(confirmed)
+            end)
         end
 
         local function load_session()
@@ -95,7 +112,7 @@ return {{
             vim.ui.select(options, {
                 prompt = "Load session"
             }, function (confirmed)
-                    sessions.read(confirmed)
+                sessions.read(confirmed)
             end)
         end
 
@@ -105,6 +122,7 @@ return {{
             { "<leader>ms", splitjoin.toggle,  desc = "splitjoin" },
             { "<leader>ts", save_session,  desc = "save session" },
             { "<leader>tl", load_session,  desc = "load session" },
+            { "<leader>tr", delete_session,  desc = "load session" },
             { "<leader>mN", function()
 
                 local dedup = {}

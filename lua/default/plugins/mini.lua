@@ -98,11 +98,10 @@ return {{
         end
 
         local function delete_session()
-            local folder = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
-            vim.ui.input({
-                primpt = "Name: ",
-                default = folder
-            }, function(confirmed)
+           local options = vim.iter(sessions.detected):map(function (k) return k end):totable()
+            vim.ui.select(options, {
+                prompt = "Delete session"
+            }, function (confirmed)
                 sessions.delete(confirmed)
             end)
         end
@@ -122,7 +121,7 @@ return {{
             { "<leader>ms", splitjoin.toggle,  desc = "splitjoin" },
             { "<leader>ts", save_session,  desc = "save session" },
             { "<leader>tl", load_session,  desc = "load session" },
-            { "<leader>tr", delete_session,  desc = "load session" },
+            { "<leader>tr", delete_session,  desc = "delete session" },
             { "<leader>mN", function()
 
                 local dedup = {}

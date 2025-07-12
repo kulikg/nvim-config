@@ -81,7 +81,8 @@ return {{
             hooks = {
                 pre = {
                     read = function ()
-                        vim.cmd([[%bd]])
+                        vim.cmd([[wa]])
+                        vim.cmd([[%bd!]])
                     end
                 }
             }
